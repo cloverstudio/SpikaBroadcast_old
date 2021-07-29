@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_navigation_graph"
+    app:startDestination="@id/mainFragment">
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="clover.studio.spikabroadcastsdk.MainFragment"
+        android:label="MainFragment"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_mainFragment_to_joinMeetingFragment"
+            app:destination="@id/joinMeetingFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_out" />
+        <action
+            android:id="@+id/action_mainFragment_to_callActivity"
+            app:destination="@id/callActivity" />
+    </fragment>
+    <fragment
+        android:id="@+id/joinMeetingFragment"
+        android:name="clover.studio.spikabroadcastsdk.JoinMeetingFragment"
+        android:label="JoinMeetingFragment"
+        tools:layout="@layout/fragment_join_call" >
+        <action
+            android:id="@+id/action_joinMeetingFragment_to_callActivity"
+            app:destination="@id/callActivity" />
+    </fragment>
+    <activity
+        android:id="@+id/callActivity"
+        android:name="clover.studio.spikabroadcastsdk.call.CallActivity"
+        android:label="activity_call"
+        tools:layout="@layout/activity_call" />
+</navigation>

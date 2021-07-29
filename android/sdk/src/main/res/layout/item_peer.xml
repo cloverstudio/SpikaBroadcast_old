@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/remote_peer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/buddy"/>
+
+    <org.webrtc.SurfaceViewRenderer
+        android:id="@+id/video_renderer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:padding="5dp">
+
+        <ImageView
+            android:id="@+id/mic_off"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:layout_marginEnd="5dp"
+            android:clickable="false"
+            android:contentDescription="@null"
+            android:src="@drawable/icon_remote_mic_white_off" />
+
+        <ImageView
+            android:id="@+id/cam_off"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:clickable="false"
+            android:contentDescription="@null"
+            android:src="@drawable/icon_remote_webcam_white_off" />
+    </LinearLayout>
+</FrameLayout>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">sdk</string>
+    <string name="participants_x">Participants_x</string>
+    <string name="share_invite_link">Share invite link</string>
+</resources>

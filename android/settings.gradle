@@ -1,2 +1,3 @@
 rootProject.name = "Spika Broadcast SDK"
-include ':app'
+include ':sample'
+include ':sdk'
