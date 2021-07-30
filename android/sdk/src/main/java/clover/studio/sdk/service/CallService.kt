@@ -164,7 +164,7 @@ class CallServiceImpl : LifecycleService(), CallService {
     data class NotificationConfig(
         val title: String? = "Call in progress",
         val content: String? = null,
-        val iconResId: Int = R.drawable.ic_launcher_background,
+        val iconResId: Int = R.drawable.buddy,
         val clickIntent: PendingIntent? = null
     )
 

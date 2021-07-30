@@ -98,7 +98,7 @@
             android:background="@null"
             android:contentDescription="@null"
             android:padding="10dp"
-            android:src="@drawable/video_disabled" />
+            android:src="@drawable/camera_disabled" />
 
         <ImageButton
             android:id="@+id/btn_audio"
@@ -108,7 +108,7 @@
             android:background="@null"
             android:contentDescription="@null"
             android:padding="10dp"
-            android:src="@drawable/audio_disabled" />
+            android:src="@drawable/microphone_disabled" />
 
         <ImageButton
             android:id="@+id/btn_speaker"

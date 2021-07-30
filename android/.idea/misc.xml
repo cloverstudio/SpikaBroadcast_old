@@ -3,12 +3,18 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="sample/src/main/res/drawable/new_spika_logo.xml" value="0.23385416666666667" />
         <entry key="sample/src/main/res/layout/activity_call.xml" value="0.15172101449275363" />
         <entry key="sample/src/main/res/layout/fragment_participants.xml" value="0.15172101449275363" />
+        <entry key="sample/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.23385416666666667" />
         <entry key="sdk/src/main/res/drawable-v24/back_arrow.xml" value="0.2917948717948718" />
         <entry key="sdk/src/main/res/drawable-v24/blue_button_bg.xml" value="0.2917948717948718" />
+        <entry key="sdk/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.23385416666666667" />
         <entry key="sdk/src/main/res/drawable/back_arrow.xml" value="0.2917948717948718" />
         <entry key="sdk/src/main/res/drawable/blue_button_bg.xml" value="0.2917948717948718" />
+        <entry key="sdk/src/main/res/drawable/participants.xml" value="0.25104166666666666" />
+        <entry key="sdk/src/main/res/drawable/speaker_enabled.xml" value="0.25104166666666666" />
+        <entry key="sdk/src/main/res/drawable/video_disabled.xml" value="0.25104166666666666" />
         <entry key="sdk/src/main/res/layout/call_view.xml" value="0.1322463768115942" />
         <entry key="sdk/src/main/res/layout/dialog_participants.xml" value="0.28020833333333334" />
         <entry key="sdk/src/main/res/layout/item_participant.xml" value="0.1322463768115942" />
