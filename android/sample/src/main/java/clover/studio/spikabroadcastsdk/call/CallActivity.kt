@@ -9,6 +9,8 @@ import clover.studio.spikabroadcastsdk.databinding.ActivityCallBinding
 
 
 const val EXTRA_ROOD_ID = "roomId"
+private const val HOSTNAME = "mediasouptest.clover.studio"
+private const val PORT = "4443"
 
 class CallActivity : AppCompatActivity() {
 
@@ -44,7 +46,13 @@ class CallActivity : AppCompatActivity() {
         roomId = intent.extras?.getString(EXTRA_ROOD_ID)
         roomId?.let {
             spikaBroadcast = SpikaBroadcast(
-                this, this, it, spikaBroadcastListener, binding.rootLayout
+                this,
+                this,
+                it,
+                spikaBroadcastListener,
+                binding.rootLayout,
+                HOSTNAME,
+                PORT
             )
         }
     }

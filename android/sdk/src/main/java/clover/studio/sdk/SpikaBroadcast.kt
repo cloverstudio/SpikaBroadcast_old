@@ -21,7 +21,7 @@ import clover.studio.sdk.model.Participant
 import clover.studio.sdk.model.Peers
 import clover.studio.sdk.service.CallServiceImpl
 import clover.studio.sdk.service.ROOM_ID
-import clover.studio.sdk.viewmodel.CombinedLiveData
+import clover.studio.sdk.utils.UrlFactory
 import clover.studio.sdk.viewmodel.DeviceState
 import com.nabinbhandari.android.permissions.PermissionHandler
 import com.nabinbhandari.android.permissions.Permissions
@@ -36,12 +36,15 @@ interface SpikaBroadcastListener {
     fun callClosed()
 }
 
+// TODO Consider moving to a builder pattern
 class SpikaBroadcast(
     private val applicationContext: AppCompatActivity,
     private val lifecycleOwner: LifecycleOwner,
     private val roomId: String,
     private val spikaBroadcastListener: SpikaBroadcastListener?,
-    viewContainer: ViewGroup
+    viewContainer: ViewGroup,
+    hostName: String,
+    port: String
 ) {
 
     private var binding: CallViewBinding
@@ -54,6 +57,9 @@ class SpikaBroadcast(
         MediasoupClient.initialize(applicationContext)
         Logger.setLogLevel(Logger.LogLevel.LOG_DEBUG)
         Logger.setDefaultHandler()
+
+        // Initialize server data in UrlFactory singleton
+        UrlFactory.setServerData(hostName, port)
 
         binding = CallViewBinding.inflate((LayoutInflater.from(applicationContext)))
         viewContainer.addView(binding.root)

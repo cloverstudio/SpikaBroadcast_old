@@ -16,7 +16,7 @@ import clover.studio.clovermediasouppoc.utils.Async
 import clover.studio.clovermediasouppoc.utils.JsonUtils.jsonPut
 import clover.studio.clovermediasouppoc.utils.JsonUtils.toJsonObject
 import clover.studio.clovermediasouppoc.utils.PeerConnectionUtils
-import clover.studio.clovermediasouppoc.utils.UrlFactory
+import clover.studio.sdk.utils.UrlFactory
 import io.reactivex.disposables.CompositeDisposable
 import org.json.JSONArray
 import org.json.JSONException
