@@ -1,13 +1,27 @@
 ### [interface] SpikaBroacstLinstener
 
-- onStartVideo ( Producer )
-- onConsumerUpdate ( Array<Consumer> )
+- onStartVideo
+
+  - Producer
+
+- onConsumerUpdate
+
+  - Array<Consumer>
+
 - onMicrophoneStateChanged
+
+  - boolean
+
 - onCameraStateChanged
+
+  - boolean
+
 - onSpeakerStateChanged
+
+  - boolean
+
 - onCallClosed
-- onToggleCamera
-- onToggleMicrophone
+
 - onUpdateCameraDevice
 - onUpdateMicrophoneDevice
 - onUpdateSpeakerDevice
