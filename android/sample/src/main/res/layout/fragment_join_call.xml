@@ -37,6 +37,7 @@
         android:layout_marginTop="40dp"
         android:background="@drawable/text_input_bg"
         android:hint="@string/meeting_link"
+        android:text="room"
         android:minHeight="45dp"
         android:paddingHorizontal="8dp"
         android:textColor="@color/black"

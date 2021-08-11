@@ -9,6 +9,7 @@ class Peer(info: JSONObject) : Info() {
     init {
         id = info.optString("id")
         displayName = info.optString("displayName")
+        avatarUrl = info.optString("avatarUrl")
         val deviceInfo = info.optJSONObject("device")
         device = if (deviceInfo != null) {
             DeviceInfo()

@@ -20,22 +20,23 @@ import clover.studio.clovermediasouppoc.utils.PeerConnectionUtils
 import clover.studio.clovermediasouppoc.utils.Utils.getRandomString
 import clover.studio.sdk.R
 import clover.studio.sdk.call.*
-import clover.studio.sdk.model.Consumers
-import clover.studio.sdk.model.Participant
-import clover.studio.sdk.model.Peers
-import clover.studio.sdk.model.Producers
+import clover.studio.sdk.model.*
 import clover.studio.sdk.viewmodel.CombinedLiveData
 import clover.studio.sdk.viewmodel.DeviceState
 import clover.studio.sdk.viewmodel.MeProps
+import clover.studio.sdk.viewmodel.PeerProps
 import io.reactivex.Observable
 import org.mediasoup.droid.Logger
+import org.webrtc.AudioTrack
+import org.webrtc.VideoTrack
+import java.util.HashSet
 
 
 private const val CHANNEL_ID = "Call service"
 private const val NOTIFICATION_ID = 400
 
 const val EXTRA_ACTION = "action"
-const val ROOM_ID = "roomId"
+const val USER_INFO = "userInfo"
 
 interface CallService {
     fun getProducers(): SupplierMutableLiveData<Producers>
@@ -43,11 +44,42 @@ interface CallService {
     fun getConsumers(): SupplierMutableLiveData<Consumers>
     fun getRoomStore(): RoomStore
     fun getMe(): SupplierMutableLiveData<MeProps>
+
+    /**
+     * Returns a LiveData object that contains a list of all the call participants
+     * (including the self user)
+     */
     fun getCallParticipants(): LiveData<List<Participant>>
+
+    /**
+     * Returns a LiveData object that contains a list of all the call peers. This list contains
+     * the streams and peer status for displaying.
+     */
+    fun getCallPeers(): LiveData<List<PeerProps>>
+
+    /**
+     * Switches the currently used camera to the next one in the camera list
+     */
     fun switchCamera()
+
+    /**
+     * Toggles the camera state between enabled and disabled.
+     */
     fun toggleCameraState()
+
+    /**
+     * Toggles the microphone state between enabled and disabled.
+     */
     fun toggleMicrophoneState()
+
+    /**
+     * Toggles the speaker state between enabled and disabled.
+     */
     fun toggleSpeakerState()
+
+    /**
+     * Ends the current call.
+     */
     fun endCall()
 }
 
@@ -64,9 +96,7 @@ class CallServiceImpl : LifecycleService(), CallService {
     private var notificationConfig: NotificationConfig = NotificationConfig()
 
     enum class Action {
-        JOIN_CALL,
-        HANG_UP,
-        MUTE_AUDIO
+        JOIN_CALL
     }
 
     companion object {
@@ -81,12 +111,6 @@ class CallServiceImpl : LifecycleService(), CallService {
             val stopIntent = Intent(context, CallServiceImpl::class.java)
             context.stopService(stopIntent)
         }
-
-        fun sendAction(context: Context, action: Action) {
-            val actionIntent = Intent(context, CallServiceImpl::class.java)
-            actionIntent.putExtra(EXTRA_ACTION, action)
-            ContextCompat.startForegroundService(context, actionIntent)
-        }
     }
 
     override fun onDestroy() {
@@ -100,11 +124,11 @@ class CallServiceImpl : LifecycleService(), CallService {
 
         when (intent?.getSerializableExtra(EXTRA_ACTION)) {
             Action.JOIN_CALL -> {
-                callConfig.roomId = intent.extras?.getString(ROOM_ID)
+                val userInfo = intent.extras?.getParcelable<UserInformation>(USER_INFO)
+                callConfig.roomId = userInfo?.roomId
+                callConfig.avatarUrl = userInfo?.avatarUrl
+                callConfig.displayName = userInfo?.displayName
                 createRoom()
-            }
-            Action.MUTE_AUDIO -> {
-                roomClient?.muteMic()
             }
         }
 
@@ -155,8 +179,9 @@ class CallServiceImpl : LifecycleService(), CallService {
 
     data class CallConfig(
         var roomId: String? = "room",
+        var avatarUrl: String? = null,
         val peerId: String = getRandomString(8),
-        val displayName: String = getRandomString(8),
+        var displayName: String? = getRandomString(8),
         val forceH264: Boolean = false,
         val forceVP9: Boolean = false
     )
@@ -227,6 +252,60 @@ class CallServiceImpl : LifecycleService(), CallService {
 
             return@CombinedLiveData participantsList
         }
+    }
+
+    override fun getCallPeers(): LiveData<List<PeerProps>> {
+        return CombinedLiveData(roomStore.getConsumers(), roomStore.getPeers()) { consumers, peers ->
+            val peerList = mutableListOf<PeerProps>()
+            if (consumers == null || peers == null) {
+                return@CombinedLiveData emptyList<PeerProps>()
+            }
+
+            var videoConsumerWrapper: Consumers.ConsumerWrapper? = null
+            var audioConsumerWrapper: Consumers.ConsumerWrapper? = null
+
+            for (peer in peers.allPeers) {
+                val consumerIds: HashSet<String> = peer.consumers
+                for (consumerId in consumerIds) {
+                    val wp: Consumers.ConsumerWrapper? = consumers.getConsumer(consumerId)
+                    if (wp?.consumer == null) {
+                        continue
+                    }
+
+                    if ("video" == wp.consumer.kind) {
+                        videoConsumerWrapper = wp
+                    } else if ("audio" == wp.consumer.kind) {
+                        audioConsumerWrapper = wp
+                    }
+                }
+
+                val peerProps = PeerProps(roomStore)
+                peerProps.videoConsumerId = videoConsumerWrapper?.consumer?.id
+                peerProps.videoRtpParameters = videoConsumerWrapper?.consumer?.rtpParameters
+                peerProps.videoTrack =
+                    if (videoConsumerWrapper != null) videoConsumerWrapper.consumer.track as VideoTrack else null
+                peerProps.videoScore = videoConsumerWrapper?.score
+                peerProps.videoVisible = if (videoConsumerWrapper != null) {
+                    !videoConsumerWrapper.isLocallyPaused && !videoConsumerWrapper.isRemotelyPaused
+                } else {
+                    false
+                }
+
+                peerProps.audioConsumerId = audioConsumerWrapper?.consumer?.id
+                peerProps.audioRtpParameters = audioConsumerWrapper?.consumer?.rtpParameters
+                peerProps.audioTrack =
+                    if (audioConsumerWrapper != null) audioConsumerWrapper.consumer.track as AudioTrack else null
+                peerProps.audioScore = audioConsumerWrapper?.score
+                peerProps.audioEnabled = if (audioConsumerWrapper != null) {
+                    !audioConsumerWrapper.isLocallyPaused && !audioConsumerWrapper.isRemotelyPaused
+                } else {
+                    false
+                }
+                peerList.add(peerProps)
+            }
+            return@CombinedLiveData peerList
+        }
+
     }
 
     override fun switchCamera() {

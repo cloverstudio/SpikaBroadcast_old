@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import clover.studio.sdk.SpikaBroadcast
 import clover.studio.sdk.SpikaBroadcastListener
+import clover.studio.sdk.model.ServerInfo
+import clover.studio.sdk.model.UserInformation
+import clover.studio.sdk.viewmodel.PeerProps
 import clover.studio.spikabroadcastsdk.databinding.ActivityCallBinding
 
 
@@ -20,6 +23,14 @@ class CallActivity : AppCompatActivity() {
     private var roomId: String? = null
 
     private val spikaBroadcastListener = object : SpikaBroadcastListener {
+//        override fun onLocalVideoStreamStart(producer: Producer) {
+//            TODO("Not yet implemented")
+//        }
+
+        override fun onRemoteStreamsChanged(consumers: List<PeerProps>) {
+            TODO("Not yet implemented")
+        }
+
         override fun microphoneStateChanged(enabled: Boolean) {
             TODO("Not yet implemented")
         }
@@ -48,11 +59,14 @@ class CallActivity : AppCompatActivity() {
             spikaBroadcast = SpikaBroadcast(
                 this,
                 this,
-                it,
+                UserInformation(
+                    "Korisnik",
+                    it,
+                    "https://i.pravatar.cc/300"
+                ),
                 spikaBroadcastListener,
                 binding.rootLayout,
-                HOSTNAME,
-                PORT
+                ServerInfo(HOSTNAME, PORT)
             )
         }
     }

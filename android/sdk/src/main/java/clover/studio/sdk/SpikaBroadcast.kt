@@ -18,18 +18,23 @@ import clover.studio.sdk.adapter.PeerAdapter
 import clover.studio.sdk.call.ParticipantsFragment
 import clover.studio.sdk.databinding.CallViewBinding
 import clover.studio.sdk.model.Participant
-import clover.studio.sdk.model.Peers
+import clover.studio.sdk.model.ServerInfo
+import clover.studio.sdk.model.UserInformation
 import clover.studio.sdk.service.CallServiceImpl
-import clover.studio.sdk.service.ROOM_ID
+import clover.studio.sdk.service.USER_INFO
 import clover.studio.sdk.utils.UrlFactory
 import clover.studio.sdk.viewmodel.DeviceState
+import clover.studio.sdk.viewmodel.PeerProps
 import com.nabinbhandari.android.permissions.PermissionHandler
 import com.nabinbhandari.android.permissions.Permissions
 import org.mediasoup.droid.Logger
 import org.mediasoup.droid.MediasoupClient
+//import org.mediasoup.droid.Producer
 import org.webrtc.RendererCommon
 
 interface SpikaBroadcastListener {
+//    fun onLocalVideoStreamStart(producer: Producer)
+    fun onRemoteStreamsChanged(consumers: List<PeerProps>)
     fun microphoneStateChanged(enabled: Boolean)
     fun cameraStateChanged(enabled: Boolean)
     fun speakerStateChanged(enabled: Boolean)
@@ -40,11 +45,10 @@ interface SpikaBroadcastListener {
 class SpikaBroadcast(
     private val applicationContext: AppCompatActivity,
     private val lifecycleOwner: LifecycleOwner,
-    private val roomId: String,
+    private val userInformation: UserInformation,
     private val spikaBroadcastListener: SpikaBroadcastListener?,
     viewContainer: ViewGroup,
-    hostName: String,
-    port: String
+    serverInfo: ServerInfo
 ) {
 
     private var binding: CallViewBinding
@@ -59,7 +63,7 @@ class SpikaBroadcast(
         Logger.setDefaultHandler()
 
         // Initialize server data in UrlFactory singleton
-        UrlFactory.setServerData(hostName, port)
+        UrlFactory.setServerData(serverInfo.hostName, serverInfo.port)
 
         binding = CallViewBinding.inflate((LayoutInflater.from(applicationContext)))
         viewContainer.addView(binding.root)
@@ -143,7 +147,7 @@ class SpikaBroadcast(
             applicationContext,
             CallServiceImpl.Action.JOIN_CALL,
             bundleOf(
-                Pair(ROOM_ID, roomId)
+                Pair(USER_INFO, userInformation)
             )
         )
     }

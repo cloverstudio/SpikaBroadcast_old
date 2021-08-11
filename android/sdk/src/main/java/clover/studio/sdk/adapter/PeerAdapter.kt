@@ -14,6 +14,7 @@ import clover.studio.sdk.call.RoomStore
 import clover.studio.sdk.databinding.ItemPeerBinding
 import clover.studio.sdk.model.Peer
 import clover.studio.sdk.viewmodel.PeerProps
+import com.bumptech.glide.Glide
 import org.mediasoup.droid.Logger
 import org.webrtc.RendererCommon
 import java.util.*
@@ -103,7 +104,7 @@ class PeerAdapter(
         }
 
     class PeerViewHolder(
-        view: View,
+        private val view: View,
         private val peerProps: PeerProps
     ) : RecyclerView.ViewHolder(view) {
 
@@ -116,6 +117,8 @@ class PeerAdapter(
 
         fun bind(owner: LifecycleOwner, peer: Peer) {
             Logger.d(TAG, "bind() id: " + peer.id + ", name: " + peer.displayName)
+
+            Glide.with(view).load(peer.avatarUrl).into(binding.placeholder)
 
             peerProps.connect(owner, peer.id, {
                 if (peerProps.videoTrack != null) {

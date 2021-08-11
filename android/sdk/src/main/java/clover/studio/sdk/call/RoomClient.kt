@@ -60,6 +60,9 @@ internal class RoomClient(
     // Display name.
     private var mDisplayName: String?
 
+    // Display name.
+    private var avatarUrl: String?
+
     // TODO(Haiyangwu):Next expected dataChannel test number.
     private val mNextDataChannelTestNumber: Long = 0
 
@@ -114,6 +117,7 @@ internal class RoomClient(
     init {
         Logger.d(TAG, "init")
         mDisplayName = callConfig.displayName
+        avatarUrl = callConfig.avatarUrl
         mClosed = false
         mProtooUrl = UrlFactory.getProtooUrl(callConfig.roomId, callConfig.peerId, callConfig.forceH264, callConfig.forceVP9)
         this.mStore.setMe(callConfig.peerId, callConfig.displayName, mOptions.device)
@@ -670,6 +674,7 @@ internal class RoomClient(
                 "join"
             ) { req ->
                 jsonPut(req, "displayName", mDisplayName)
+                jsonPut(req, "avatarUrl", avatarUrl)
                 jsonPut(req, "device", mOptions.device.toJSONObject())
                 jsonPut(req, "rtpCapabilities", toJsonObject(rtpCapabilities))
                 // TODO (HaiyangWu): add sctpCapabilities
