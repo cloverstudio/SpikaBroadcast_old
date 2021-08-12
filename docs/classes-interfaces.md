@@ -4,9 +4,9 @@
 
   - Producer
 
-- onConsumerUpdate
+- onPerticipantUpdate
 
-  - Array<Consumer>
+  - Array<Perticipant>
 
 - onMicrophoneStateChanged
 
@@ -16,15 +16,35 @@
 
   - boolean
 
-- onSpeakerStateChanged
+- onSpeakerStateChanged ( only moble )
 
   - boolean
 
 - onCallClosed
 
 - onUpdateCameraDevice
+
+  - Device
+
 - onUpdateMicrophoneDevice
+
+  - Device
+
 - onUpdateSpeakerDevice
+
+  - Device
+
+### [class] Perticipant
+
+#### constructor
+
+#### public variables
+
+- audio atream
+- video steam
+- mute/unmute
+- display name
+- avatar url
 
 ### [class] SpikaBroadcast
 
@@ -35,6 +55,8 @@
 - port
 - roomId
 - peerId
+- displayName
+- avatarUrl
 - SpikaBroacstLinstener
 
 #### public methods
@@ -48,6 +70,11 @@
 - setSpeakerDevice
 - toggleCamera
 - toggleMicrophone
+- toggleSpeaker ( onlyMobie )
+- getCameraState
+- getMicrophoneState
+- getSpeakerState
+- switchCamera
 
 ### [class] SpikaBroadcastUI
 
@@ -59,7 +86,6 @@
 - roomId
 - peerId
 - SpikaBroacstLinstener
+- ParentView
 
 #### public methods
-
-ddd

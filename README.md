@@ -17,11 +17,13 @@ Mediasoup client SDK's to build any kind of streaming feature.
 
 ### Constructor
 
-- The pointer to the view to draw
+- Event object
 - Server information
 
 ### Methods
 
+- Attach view
+- Deattach view
 - JOIN ( connect to server in this moment )
 - the room indeitifier
 - Get device list ( audio and video device )
