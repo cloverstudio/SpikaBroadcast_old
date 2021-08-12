@@ -20,10 +20,10 @@ import org.webrtc.RendererCommon
 import java.util.*
 
 class PeerAdapter(
-    private val mStore: RoomStore,
-    private val mLifecycleOwner: LifecycleOwner
+    private val roomStore: RoomStore,
+    private val lifecycleOwner: LifecycleOwner
 ) : RecyclerView.Adapter<PeerViewHolder>() {
-    private var mPeers: List<Peer> = LinkedList()
+    private var peers: List<Peer> = LinkedList()
     private var containerHeight = 0
     private var recyclerView: RecyclerView? = null
 
@@ -42,7 +42,7 @@ class PeerAdapter(
     }
 
     private fun observePeers() {
-        mStore.getPeers().observe(mLifecycleOwner, { peers ->
+        roomStore.getPeers().observe(lifecycleOwner, { peers ->
             replacePeers(peers.allPeers)
             this.recyclerView?.let {
                 (it.layoutManager as GridLayoutManager).spanCount = columnCount
@@ -51,8 +51,8 @@ class PeerAdapter(
     }
 
     private fun replacePeers(peers: List<Peer>) {
-        val diffResult = DiffUtil.calculateDiff(PeerDiffCallback(mPeers, peers))
-        mPeers = peers
+        val diffResult = DiffUtil.calculateDiff(PeerDiffCallback(this.peers, peers))
+        this.peers = peers
         diffResult.dispatchUpdatesTo(this)
     }
 
@@ -62,7 +62,7 @@ class PeerAdapter(
         val view = LayoutInflater.from(context).inflate(R.layout.item_peer, parent, false)
         return PeerViewHolder(
             view,
-            PeerProps(mStore)
+            PeerProps(roomStore)
         )
     }
 
@@ -72,11 +72,11 @@ class PeerAdapter(
         layoutParams.height = itemHeight
         holder.itemView.layoutParams = layoutParams
         // bind
-        holder.bind(mLifecycleOwner, mPeers[position])
+        holder.bind(lifecycleOwner, peers[position])
     }
 
     override fun getItemCount(): Int {
-        return mPeers.size
+        return peers.size
     }
 
     private val columnCount: Int

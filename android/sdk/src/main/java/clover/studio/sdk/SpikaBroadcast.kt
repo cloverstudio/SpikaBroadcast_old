@@ -6,17 +6,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.GridLayoutManager
-import clover.studio.clovermediasouppoc.utils.PeerConnectionUtils
 import clover.studio.sdk.adapter.PeerAdapter
-import clover.studio.sdk.call.ParticipantsFragment
-import clover.studio.sdk.databinding.CallViewBinding
+import clover.studio.sdk.model.LocalStream
 import clover.studio.sdk.model.Participant
 import clover.studio.sdk.model.ServerInfo
 import clover.studio.sdk.model.UserInformation
@@ -24,16 +20,15 @@ import clover.studio.sdk.service.CallServiceImpl
 import clover.studio.sdk.service.USER_INFO
 import clover.studio.sdk.utils.UrlFactory
 import clover.studio.sdk.viewmodel.DeviceState
+import clover.studio.sdk.viewmodel.MeProps
 import clover.studio.sdk.viewmodel.PeerProps
 import com.nabinbhandari.android.permissions.PermissionHandler
 import com.nabinbhandari.android.permissions.Permissions
 import org.mediasoup.droid.Logger
 import org.mediasoup.droid.MediasoupClient
-//import org.mediasoup.droid.Producer
-import org.webrtc.RendererCommon
 
 interface SpikaBroadcastListener {
-//    fun onLocalVideoStreamStart(producer: Producer)
+    fun onLocalStreamChanged(localStream: LocalStream)
     fun onRemoteStreamsChanged(consumers: List<PeerProps>)
     fun microphoneStateChanged(enabled: Boolean)
     fun cameraStateChanged(enabled: Boolean)
@@ -42,20 +37,16 @@ interface SpikaBroadcastListener {
 }
 
 // TODO Consider moving to a builder pattern
-class SpikaBroadcast(
+open class SpikaBroadcast(
     private val applicationContext: AppCompatActivity,
     private val lifecycleOwner: LifecycleOwner,
     private val userInformation: UserInformation,
     private val spikaBroadcastListener: SpikaBroadcastListener?,
-    viewContainer: ViewGroup,
-    serverInfo: ServerInfo
+    serverInfo: ServerInfo,
 ) {
 
-    private var binding: CallViewBinding
-    private var mPeerAdapter: PeerAdapter? = null
-
-    private var callService: CallServiceImpl? = null
-    private var callServiceBound = false
+    protected var callService: CallServiceImpl? = null
+    protected var callServiceBound = false
 
     init {
         MediasoupClient.initialize(applicationContext)
@@ -65,40 +56,7 @@ class SpikaBroadcast(
         // Initialize server data in UrlFactory singleton
         UrlFactory.setServerData(serverInfo.hostName, serverInfo.port)
 
-        binding = CallViewBinding.inflate((LayoutInflater.from(applicationContext)))
-        viewContainer.addView(binding.root)
-
-        initViews()
         checkPermission()
-    }
-
-    private fun initViews() {
-        binding.pipVideoView.init(PeerConnectionUtils.eglContext, null)
-        binding.pipVideoView.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FILL)
-        binding.pipVideoView.setZOrderMediaOverlay(true)
-
-        binding.btnSwitchCamera.setOnClickListener {
-            switchCamera()
-        }
-
-        binding.btnAudio.setOnClickListener {
-            callService?.toggleMicrophoneState()
-        }
-
-        binding.btnVideo.setOnClickListener {
-            callService?.toggleCameraState()
-        }
-
-        binding.btnEndCall.setOnClickListener {
-            callService?.endCall()
-            spikaBroadcastListener?.callClosed()
-        }
-
-        binding.btnParticipants.setOnClickListener {
-            ParticipantsFragment(
-                getParticipantsLiveData()
-            ).show(applicationContext.supportFragmentManager, null)
-        }
     }
 
     private fun checkPermission() {
@@ -173,6 +131,7 @@ class SpikaBroadcast(
     private val serviceConnection: ServiceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName) {
             callServiceBound = false
+            onServiceConnectionUpdate(callServiceBound)
         }
 
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
@@ -180,53 +139,43 @@ class SpikaBroadcast(
                 service as CallServiceImpl.CallServiceBinder
             callService = binder.getService()
             callServiceBound = true
-            observeService()
-        }
-    }
-
-    private fun observeService() {
-        callService?.let {
-            mPeerAdapter = PeerAdapter(it.getRoomStore(), lifecycleOwner)
-            binding.rvPeers.layoutManager = GridLayoutManager(applicationContext, 1)
-            binding.rvPeers.adapter = mPeerAdapter
             observeMe()
+            onServiceConnectionUpdate(callServiceBound)
         }
     }
 
     private fun observeMe() {
-        callService?.getMe()?.observe(
-            lifecycleOwner,
-            { me ->
-                me.videoTrack?.addSink(binding.pipVideoView)
+        callService?.let {
+            it.getMe().observe(
+                lifecycleOwner,
+                { me -> onMeUpdate(me) }
+            )
+        }
+    }
 
-                if (me.cameraState == DeviceState.ON) {
-                    binding.btnVideo.setImageResource(R.drawable.camera_disabled)
-                } else {
-                    binding.btnVideo.setImageResource(R.drawable.camera_enabled)
-                }
+    protected open fun onServiceConnectionUpdate(isConnected: Boolean) {}
 
-                if (me.microphoneState == DeviceState.ON) {
-                    binding.btnAudio.setImageResource(R.drawable.microphone_disabled)
-                } else {
-                    binding.btnAudio.setImageResource(R.drawable.microphone_enabled)
-                }
-            }
+    protected open fun onMeUpdate(me: MeProps) {
+        val cameraEnabled = me.cameraState == DeviceState.ON
+        val microphoneEnabled = me.microphoneState == DeviceState.ON
+        spikaBroadcastListener?.onLocalStreamChanged(
+            LocalStream(me.videoTrack, cameraEnabled, microphoneEnabled)
         )
     }
 
-    private fun switchCamera() {
+    internal fun switchCamera() {
         callService?.switchCamera()
     }
 
-    fun toggleMicrophoneState(){
+    fun toggleMicrophoneState() {
         callService?.toggleMicrophoneState()
     }
 
-    fun toggleCameraState(){
+    fun toggleCameraState() {
         callService?.toggleCameraState()
     }
 
-    fun toggleSpeakerState(){
+    fun toggleSpeakerState() {
         callService?.toggleSpeakerState()
     }
 
@@ -234,7 +183,7 @@ class SpikaBroadcast(
         return callService?.getCallParticipants()
     }
 
-    fun endCall(){
+    fun endCall() {
         callService?.endCall()
     }
 

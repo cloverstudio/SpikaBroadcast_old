@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import clover.studio.sdk.SpikaBroadcast
 import clover.studio.sdk.SpikaBroadcastListener
+import clover.studio.sdk.SpikaBroadcastUi
+import clover.studio.sdk.model.LocalStream
 import clover.studio.sdk.model.ServerInfo
 import clover.studio.sdk.model.UserInformation
 import clover.studio.sdk.viewmodel.PeerProps
@@ -23,24 +25,19 @@ class CallActivity : AppCompatActivity() {
     private var roomId: String? = null
 
     private val spikaBroadcastListener = object : SpikaBroadcastListener {
-//        override fun onLocalVideoStreamStart(producer: Producer) {
-//            TODO("Not yet implemented")
-//        }
+        override fun onLocalStreamChanged(localStream: LocalStream) {
+        }
 
         override fun onRemoteStreamsChanged(consumers: List<PeerProps>) {
-            TODO("Not yet implemented")
         }
 
         override fun microphoneStateChanged(enabled: Boolean) {
-            TODO("Not yet implemented")
         }
 
         override fun cameraStateChanged(enabled: Boolean) {
-            TODO("Not yet implemented")
         }
 
         override fun speakerStateChanged(enabled: Boolean) {
-            TODO("Not yet implemented")
         }
 
         override fun callClosed() {
@@ -56,17 +53,17 @@ class CallActivity : AppCompatActivity() {
 
         roomId = intent.extras?.getString(EXTRA_ROOD_ID)
         roomId?.let {
-            spikaBroadcast = SpikaBroadcast(
+            spikaBroadcast = SpikaBroadcastUi(
                 this,
                 this,
+                spikaBroadcastListener,
                 UserInformation(
                     "Korisnik",
                     it,
                     "https://i.pravatar.cc/300"
                 ),
-                spikaBroadcastListener,
-                binding.rootLayout,
-                ServerInfo(HOSTNAME, PORT)
+                ServerInfo(HOSTNAME, PORT),
+                binding.rootLayout
             )
         }
     }

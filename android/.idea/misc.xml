@@ -5,6 +5,7 @@
       <map>
         <entry key="sample/src/main/res/drawable/new_spika_logo.xml" value="0.23385416666666667" />
         <entry key="sample/src/main/res/layout/activity_call.xml" value="0.15172101449275363" />
+        <entry key="sample/src/main/res/layout/call_view.xml" value="0.26614583333333336" />
         <entry key="sample/src/main/res/layout/fragment_join_call.xml" value="0.15217391304347827" />
         <entry key="sample/src/main/res/layout/fragment_participants.xml" value="0.15172101449275363" />
         <entry key="sample/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.23385416666666667" />
