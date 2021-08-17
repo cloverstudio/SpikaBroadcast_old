@@ -4,7 +4,7 @@
 
   - Producer
 
-- onPerticipantUpdate
+- onParticipantUpdate
 
   - Array<Perticipant>
 

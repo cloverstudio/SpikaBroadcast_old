@@ -16,7 +16,7 @@ function PageInitial() {
             <li>
               <div className="button type_01">
                 <a onClick={(e) => history.push("/create")}>
-                  <i className="fas fa-video"></i>
+                  <i className="fas fa-plus"></i>
                 </a>
               </div>
               <p>
@@ -26,7 +26,7 @@ function PageInitial() {
             <li>
               <div className="button type_02">
                 <a onClick={(e) => history.push("/join")}>
-                  <i className="fal fa-plus"></i>
+                  <i className="fal fa-video"></i>
                 </a>
               </div>
               <p>
