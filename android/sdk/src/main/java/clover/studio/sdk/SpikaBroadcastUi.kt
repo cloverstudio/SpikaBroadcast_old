@@ -86,15 +86,15 @@ class SpikaBroadcastUi(
         me.videoTrack?.addSink(binding.pipVideoView)
 
         if (me.cameraState == DeviceState.ON) {
-            binding.btnVideo.setImageResource(R.drawable.camera_disabled)
-        } else {
             binding.btnVideo.setImageResource(R.drawable.camera_enabled)
+        } else {
+            binding.btnVideo.setImageResource(R.drawable.camera_disabled)
         }
 
         if (me.microphoneState == DeviceState.ON) {
-            binding.btnAudio.setImageResource(R.drawable.microphone_disabled)
-        } else {
             binding.btnAudio.setImageResource(R.drawable.microphone_enabled)
+        } else {
+            binding.btnAudio.setImageResource(R.drawable.microphone_disabled)
         }
         super.onMeUpdate(me)
     }
