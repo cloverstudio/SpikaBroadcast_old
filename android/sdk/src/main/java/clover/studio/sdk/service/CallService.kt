@@ -75,7 +75,7 @@ interface CallService {
     /**
      * Toggles the speaker state between enabled and disabled.
      */
-    fun toggleSpeakerState()
+    fun toggleSpeakerState(): Boolean
 
     /**
      * Ends the current call.
@@ -255,7 +255,10 @@ class CallServiceImpl : LifecycleService(), CallService {
     }
 
     override fun getCallPeers(): LiveData<List<PeerProps>> {
-        return CombinedLiveData(roomStore.getConsumers(), roomStore.getPeers()) { consumers, peers ->
+        return CombinedLiveData(
+            roomStore.getConsumers(),
+            roomStore.getPeers()
+        ) { consumers, peers ->
             val peerList = mutableListOf<PeerProps>()
             if (consumers == null || peers == null) {
                 return@CombinedLiveData emptyList<PeerProps>()
@@ -328,9 +331,11 @@ class CallServiceImpl : LifecycleService(), CallService {
         }
     }
 
-    override fun toggleSpeakerState() {
+    override fun toggleSpeakerState(): Boolean {
         val audioManager = this.getSystemService(AUDIO_SERVICE) as AudioManager
-        audioManager.isSpeakerphoneOn = !audioManager.isSpeakerphoneOn
+        val newSpeakerState = !audioManager.isSpeakerphoneOn
+        audioManager.isSpeakerphoneOn = newSpeakerState
+        return newSpeakerState
     }
 
     override fun endCall() {

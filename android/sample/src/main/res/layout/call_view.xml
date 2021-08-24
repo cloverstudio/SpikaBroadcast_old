@@ -119,7 +119,7 @@
             android:background="@null"
             android:contentDescription="@null"
             android:padding="10dp"
-            android:src="@drawable/speaker_enabled" />
+            android:src="@drawable/speaker_disabled" />
 
         <ImageButton
             android:id="@+id/btn_participants"

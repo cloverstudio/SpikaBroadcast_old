@@ -6,12 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
-import androidx.recyclerview.widget.GridLayoutManager
-import clover.studio.sdk.adapter.PeerAdapter
 import clover.studio.sdk.model.LocalStream
 import clover.studio.sdk.model.Participant
 import clover.studio.sdk.model.ServerInfo
@@ -38,7 +35,7 @@ interface SpikaBroadcastListener {
 
 // TODO Consider moving to a builder pattern
 open class SpikaBroadcast(
-    private val applicationContext: AppCompatActivity,
+    private val applicationContext: Context,
     private val lifecycleOwner: LifecycleOwner,
     private val userInformation: UserInformation,
     private val spikaBroadcastListener: SpikaBroadcastListener?,
@@ -175,8 +172,10 @@ open class SpikaBroadcast(
         callService?.toggleCameraState()
     }
 
-    fun toggleSpeakerState() {
-        callService?.toggleSpeakerState()
+    fun toggleSpeakerState(): Boolean {
+        val newSpeakerState = callService?.toggleSpeakerState() ?: false
+        spikaBroadcastListener?.speakerStateChanged(newSpeakerState)
+        return  newSpeakerState
     }
 
     fun getParticipantsLiveData(): LiveData<List<Participant>>? {

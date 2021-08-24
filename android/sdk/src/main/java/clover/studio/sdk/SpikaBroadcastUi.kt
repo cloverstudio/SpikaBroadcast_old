@@ -58,6 +58,15 @@ class SpikaBroadcastUi(
             toggleCameraState()
         }
 
+        binding.btnSpeaker.setOnClickListener {
+            val newSpeakerState = toggleSpeakerState()
+            if (newSpeakerState) {
+                binding.btnSpeaker.setImageResource(R.drawable.speaker_enabled)
+            } else {
+                binding.btnSpeaker.setImageResource(R.drawable.speaker_disabled)
+            }
+        }
+
         binding.btnEndCall.setOnClickListener {
             endCall()
             spikaBroadcastListener?.callClosed()
