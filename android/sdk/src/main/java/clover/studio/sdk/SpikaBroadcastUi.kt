@@ -1,6 +1,7 @@
 package clover.studio.sdk
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
@@ -87,8 +88,10 @@ class SpikaBroadcastUi(
 
         if (me.cameraState == DeviceState.ON) {
             binding.btnVideo.setImageResource(R.drawable.camera_enabled)
+            binding.pipVideoView.visibility = View.VISIBLE
         } else {
             binding.btnVideo.setImageResource(R.drawable.camera_disabled)
+            binding.pipVideoView.visibility = View.GONE
         }
 
         if (me.microphoneState == DeviceState.ON) {
