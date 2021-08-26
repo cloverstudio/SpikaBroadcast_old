@@ -3,10 +3,16 @@ import React, {
   useEffect,
   useRef,
   MutableRefObject,
-  createRef,
+  useContext,
 } from "react";
 
+import { Link, useHistory } from "react-router-dom";
+
+import GlobalContext, { GlobalContextInterface } from "./context/globalContext";
+
+//function PageCreate({ gc }: { gc: GlobalContextInterface }) {
 function PageCreate() {
+  let history = useHistory();
   const [videoState, setVideoState] = useState<boolean>(false);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [microphoneState, setMicrophoneState] = useState<boolean>(false);
@@ -16,6 +22,10 @@ function PageCreate() {
   const [microphoneReady, setMicrophoneReady] = useState<boolean>(false);
   const videoElm: MutableRefObject<HTMLVideoElement | null> =
     useRef<HTMLVideoElement>(null);
+
+  const [roomId, setRoomId] = useState<string>("");
+  const { global, setGlobal } = useContext(GlobalContext);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
     let audioAccepted: boolean = false;
@@ -34,6 +44,14 @@ function PageCreate() {
         setDeviceStateMessage("Microphone ready, waiting camera.");
         setMicrophoneReady(true);
         audioAccepted = true;
+
+        if (audioStream) {
+          audioStream.getTracks().forEach(function (track) {
+            if (track.readyState == "live") {
+              track.stop();
+            }
+          });
+        }
       } catch (e) {
         setDeviceStateMessage("Waiting camera.");
         setMicrophoneState(false);
@@ -68,24 +86,55 @@ function PageCreate() {
     }
   }, [videoElm, videoStream]);
 
+  const updateGlobal = () => {
+    setGlobal({
+      roomId: roomId,
+      useMicrophone: videoState,
+      useCamera: microphoneState,
+    });
+  };
   return (
     <div className="App">
-      {" "}
       <header></header>
       <main className="bg_color_gray">
         <div id="entry_meeting">
-          <h3>Join to meeting</h3>
-
+          <h3>Host a new meeting</h3>
           <ul>
             <li>
               <input
                 type="text"
                 className="meeting_link"
-                placeholder="Meeting link"
+                placeholder="Room identifier"
+                value={roomId}
+                onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                  setRoomId(e.currentTarget.value)
+                }
               />
+              <span className="error-message">{errorMessage}</span>
             </li>
             <li>
-              <a className="style_blue">Join</a>
+              <a
+                className="style_blue"
+                onClick={(e) => {
+                  if (roomId.length === 0)
+                    return setErrorMessage("Please enter a room number.");
+                  else setErrorMessage("");
+
+                  updateGlobal();
+
+                  if (videoStream) {
+                    videoStream.getTracks().forEach(function (track) {
+                      if (track.readyState == "live") {
+                        track.stop();
+                      }
+                    });
+                  }
+
+                  history.push(`/conference/${roomId}`);
+                }}
+              >
+                Create
+              </a>
             </li>
           </ul>
 
@@ -100,20 +149,26 @@ function PageCreate() {
               style={{ display: videoState ? "block" : "none" }}
               ref={videoElm}
               autoPlay={true}
+              playsInline={true}
             />
-
             <ul>
               <li>
                 <a className="large_icon">
                   {videoState ? (
                     <i
                       className="fas fa-video"
-                      onClick={(e) => videoReady && setVideoState(!videoState)}
+                      onClick={(e) => {
+                        videoReady && setVideoState(!videoState);
+                        updateGlobal();
+                      }}
                     />
                   ) : (
                     <i
                       className="fas fa-video-slash"
-                      onClick={(e) => videoReady && setVideoState(!videoState)}
+                      onClick={(e) => {
+                        videoReady && setVideoState(!videoState);
+                        updateGlobal();
+                      }}
                     />
                   )}
                 </a>
@@ -123,16 +178,18 @@ function PageCreate() {
                   {microphoneState ? (
                     <i
                       className="fas fa-microphone"
-                      onClick={(e) =>
-                        microphoneReady && setMicrophoneState(!microphoneState)
-                      }
+                      onClick={(e) => {
+                        microphoneReady && setMicrophoneState(!microphoneState);
+                        updateGlobal();
+                      }}
                     />
                   ) : (
                     <i
                       className="fas fa-microphone-slash"
-                      onClick={(e) =>
-                        microphoneReady && setMicrophoneState(!microphoneState)
-                      }
+                      onClick={(e) => {
+                        microphoneReady && setMicrophoneState(!microphoneState);
+                        updateGlobal();
+                      }}
                     />
                   )}
                 </a>

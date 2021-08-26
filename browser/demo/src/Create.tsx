@@ -44,6 +44,14 @@ function PageCreate() {
         setDeviceStateMessage("Microphone ready, waiting camera.");
         setMicrophoneReady(true);
         audioAccepted = true;
+
+        if (audioStream) {
+          audioStream.getTracks().forEach(function (track) {
+            if (track.readyState == "live") {
+              track.stop();
+            }
+          });
+        }
       } catch (e) {
         setDeviceStateMessage("Waiting camera.");
         setMicrophoneState(false);
@@ -114,6 +122,14 @@ function PageCreate() {
 
                   updateGlobal();
 
+                  if (videoStream) {
+                    videoStream.getTracks().forEach(function (track) {
+                      if (track.readyState == "live") {
+                        track.stop();
+                      }
+                    });
+                  }
+
                   history.push(`/conference/${roomId}`);
                 }}
               >
@@ -133,6 +149,7 @@ function PageCreate() {
               style={{ display: videoState ? "block" : "none" }}
               ref={videoElm}
               autoPlay={true}
+              playsInline={true}
             />
             <ul>
               <li>

@@ -11,6 +11,8 @@
     "@types/node": "^12.20.18",
     "@types/react": "^17.0.15",
     "@types/react-dom": "^17.0.9",
+    "dayjs": "^1.10.6",
+    "hark": "^1.2.3",
     "mediasoup-client": "^3.6.37",
     "node-sass": "^6.0.1",
     "protoo-client": "^4.0.6",
@@ -46,6 +48,7 @@
     ]
   },
   "devDependencies": {
+    "@types/hark": "^1.2.2",
     "@types/protoo-client": "^4.0.1",
     "@types/react-router-dom": "^5.1.8"
   }
