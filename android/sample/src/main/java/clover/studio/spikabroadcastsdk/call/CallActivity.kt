@@ -9,7 +9,9 @@ import clover.studio.sdk.SpikaBroadcastUi
 import clover.studio.sdk.model.LocalStream
 import clover.studio.sdk.model.ServerInfo
 import clover.studio.sdk.model.UserInformation
+import clover.studio.sdk.service.CallServiceImpl
 import clover.studio.sdk.viewmodel.PeerProps
+import clover.studio.spikabroadcastsdk.R
 import clover.studio.spikabroadcastsdk.databinding.ActivityCallBinding
 
 
@@ -63,7 +65,10 @@ class CallActivity : AppCompatActivity() {
                     "https://i.pravatar.cc/300"
                 ),
                 ServerInfo(HOSTNAME, PORT),
-                binding.rootLayout
+                binding.rootLayout,
+                CallServiceImpl.NotificationConfig(
+                    iconResId = R.drawable.end_call,
+                )
             )
         }
     }

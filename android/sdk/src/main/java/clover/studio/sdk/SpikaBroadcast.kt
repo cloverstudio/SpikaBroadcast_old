@@ -14,6 +14,8 @@ import clover.studio.sdk.model.Participant
 import clover.studio.sdk.model.ServerInfo
 import clover.studio.sdk.model.UserInformation
 import clover.studio.sdk.service.CallServiceImpl
+import clover.studio.sdk.service.NOTIFICATION_CONFIG
+import clover.studio.sdk.service.SERVER_INFO
 import clover.studio.sdk.service.USER_INFO
 import clover.studio.sdk.utils.UrlFactory
 import clover.studio.sdk.viewmodel.DeviceState
@@ -39,7 +41,8 @@ open class SpikaBroadcast(
     private val lifecycleOwner: LifecycleOwner,
     private val userInformation: UserInformation,
     private val spikaBroadcastListener: SpikaBroadcastListener?,
-    serverInfo: ServerInfo,
+    private val serverInfo: ServerInfo,
+    private val notificationConfig: CallServiceImpl.NotificationConfig
 ) {
 
     protected var callService: CallServiceImpl? = null
@@ -49,9 +52,6 @@ open class SpikaBroadcast(
         MediasoupClient.initialize(applicationContext)
         Logger.setLogLevel(Logger.LogLevel.LOG_DEBUG)
         Logger.setDefaultHandler()
-
-        // Initialize server data in UrlFactory singleton
-        UrlFactory.setServerData(serverInfo.hostName, serverInfo.port)
 
         checkPermission()
     }
@@ -102,7 +102,9 @@ open class SpikaBroadcast(
             applicationContext,
             CallServiceImpl.Action.JOIN_CALL,
             bundleOf(
-                Pair(USER_INFO, userInformation)
+                Pair(USER_INFO, userInformation),
+                Pair(SERVER_INFO, serverInfo),
+                Pair(NOTIFICATION_CONFIG, notificationConfig)
             )
         )
     }

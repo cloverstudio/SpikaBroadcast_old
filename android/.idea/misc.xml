@@ -17,7 +17,7 @@
         <entry key="sdk/src/main/res/drawable/participants.xml" value="0.25104166666666666" />
         <entry key="sdk/src/main/res/drawable/speaker_enabled.xml" value="0.25104166666666666" />
         <entry key="sdk/src/main/res/drawable/video_disabled.xml" value="0.25104166666666666" />
-        <entry key="sdk/src/main/res/layout/call_view.xml" value="0.1322463768115942" />
+        <entry key="sdk/src/main/res/layout/call_view.xml" value="0.375" />
         <entry key="sdk/src/main/res/layout/dialog_participants.xml" value="0.28020833333333334" />
         <entry key="sdk/src/main/res/layout/item_participant.xml" value="0.1322463768115942" />
         <entry key="sdk/src/main/res/layout/item_peer.xml" value="0.15172101449275363" />

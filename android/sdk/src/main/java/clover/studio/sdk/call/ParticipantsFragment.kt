@@ -7,13 +7,18 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
-import clover.studio.sdk.R
 import clover.studio.sdk.databinding.DialogParticipantsBinding
 import clover.studio.sdk.databinding.ItemParticipantBinding
 import clover.studio.sdk.model.Participant
+import okhttp3.internal.format
+
+import android.content.Intent
+import clover.studio.sdk.R
+
 
 class ParticipantsFragment(
-    private val participantsLiveData: LiveData<List<Participant>>?
+    private val participantsLiveData: LiveData<List<Participant>>?,
+    private val inviteLink: String?
 ) : DialogFragment(R.layout.dialog_participants) {
 
     private lateinit var binding: DialogParticipantsBinding
@@ -30,11 +35,20 @@ class ParticipantsFragment(
 
         binding.btnBack.setOnClickListener { dismiss() }
 
+        binding.btnShareLink.setOnClickListener {
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "text/plain"
+            intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_invite_link))
+            intent.putExtra(Intent.EXTRA_TEXT, inviteLink)
+            startActivity(Intent.createChooser(intent, getString(R.string.share_using)))
+        }
+
         participantsAdapter = ParticipantRecyclerAdapter()
         binding.rvParticipants.adapter = participantsAdapter
 
         participantsLiveData?.observe(this, { participants ->
             participantsAdapter.replacePeers(participants)
+            binding.title.text = format(getString(R.string.participants_x), participants.size)
         })
     }
 }

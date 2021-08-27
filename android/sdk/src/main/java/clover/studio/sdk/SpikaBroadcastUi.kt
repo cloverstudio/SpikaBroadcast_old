@@ -12,28 +12,31 @@ import clover.studio.sdk.call.ParticipantsFragment
 import clover.studio.sdk.databinding.CallViewBinding
 import clover.studio.sdk.model.ServerInfo
 import clover.studio.sdk.model.UserInformation
+import clover.studio.sdk.service.CallServiceImpl
 import clover.studio.sdk.viewmodel.DeviceState
 import clover.studio.sdk.viewmodel.MeProps
 import org.webrtc.RendererCommon
 
 // TODO Consider moving to a builder pattern
 class SpikaBroadcastUi(
-    private val applicationContext: AppCompatActivity,
+    private val activity: AppCompatActivity,
     private val lifecycleOwner: LifecycleOwner,
     private val spikaBroadcastListener: SpikaBroadcastListener?,
     userInformation: UserInformation,
     serverInfo: ServerInfo,
     viewContainer: ViewGroup,
+    notificationConfig: CallServiceImpl.NotificationConfig
 ) : SpikaBroadcast(
-    applicationContext,
+    activity.applicationContext,
     lifecycleOwner,
     userInformation,
     spikaBroadcastListener,
-    serverInfo
+    serverInfo,
+    notificationConfig
 ) {
 
     private var binding: CallViewBinding =
-        CallViewBinding.inflate((LayoutInflater.from(applicationContext)))
+        CallViewBinding.inflate((LayoutInflater.from(activity)))
     private var mPeerAdapter: PeerAdapter? = null
 
     init {
@@ -42,6 +45,8 @@ class SpikaBroadcastUi(
     }
 
     private fun initViews() {
+        binding.topLayout.setBackgroundResource(R.color.black)
+
         binding.pipVideoView.init(PeerConnectionUtils.eglContext, null)
         binding.pipVideoView.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FILL)
         binding.pipVideoView.setZOrderMediaOverlay(true)
@@ -74,8 +79,9 @@ class SpikaBroadcastUi(
 
         binding.btnParticipants.setOnClickListener {
             ParticipantsFragment(
-                getParticipantsLiveData()
-            ).show(applicationContext.supportFragmentManager, null)
+                getParticipantsLiveData(),
+                callService?.getInvitationLink()
+            ).show(activity.supportFragmentManager, null)
         }
     }
 
@@ -87,7 +93,7 @@ class SpikaBroadcastUi(
             && callService != null
         ) {
             mPeerAdapter = PeerAdapter(callService!!.getRoomStore(), lifecycleOwner)
-            binding.rvPeers.layoutManager = GridLayoutManager(applicationContext, 1)
+            binding.rvPeers.layoutManager = GridLayoutManager(activity, 1)
             binding.rvPeers.adapter = mPeerAdapter
         }
     }

@@ -7,10 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
-import android.os.Binder
-import android.os.Build
-import android.os.Bundle
-import android.os.IBinder
+import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -21,11 +18,13 @@ import clover.studio.clovermediasouppoc.utils.Utils.getRandomString
 import clover.studio.sdk.R
 import clover.studio.sdk.call.*
 import clover.studio.sdk.model.*
+import clover.studio.sdk.utils.UrlFactory
 import clover.studio.sdk.viewmodel.CombinedLiveData
 import clover.studio.sdk.viewmodel.DeviceState
 import clover.studio.sdk.viewmodel.MeProps
 import clover.studio.sdk.viewmodel.PeerProps
 import io.reactivex.Observable
+import kotlinx.parcelize.Parcelize
 import org.mediasoup.droid.Logger
 import org.webrtc.AudioTrack
 import org.webrtc.VideoTrack
@@ -37,6 +36,8 @@ private const val NOTIFICATION_ID = 400
 
 const val EXTRA_ACTION = "action"
 const val USER_INFO = "userInfo"
+const val SERVER_INFO = "serverInfo"
+const val NOTIFICATION_CONFIG = "notificationConfig"
 
 interface CallService {
     fun getProducers(): SupplierMutableLiveData<Producers>
@@ -44,6 +45,7 @@ interface CallService {
     fun getConsumers(): SupplierMutableLiveData<Consumers>
     fun getRoomStore(): RoomStore
     fun getMe(): SupplierMutableLiveData<MeProps>
+    fun getInvitationLink(): String?
 
     /**
      * Returns a LiveData object that contains a list of all the call participants
@@ -124,10 +126,15 @@ class CallServiceImpl : LifecycleService(), CallService {
 
         when (intent?.getSerializableExtra(EXTRA_ACTION)) {
             Action.JOIN_CALL -> {
+                val notificationConfig = intent.extras?.getParcelable<NotificationConfig>(NOTIFICATION_CONFIG)
+                notificationConfig?.let { this.notificationConfig  = it }
+
                 val userInfo = intent.extras?.getParcelable<UserInformation>(USER_INFO)
+                val serverInfo = intent.extras?.getParcelable<ServerInfo>(SERVER_INFO)
                 callConfig.roomId = userInfo?.roomId
                 callConfig.avatarUrl = userInfo?.avatarUrl
                 callConfig.displayName = userInfo?.displayName
+                callConfig.serverInfo  = serverInfo
                 createRoom()
             }
         }
@@ -183,15 +190,17 @@ class CallServiceImpl : LifecycleService(), CallService {
         val peerId: String = getRandomString(8),
         var displayName: String? = getRandomString(8),
         val forceH264: Boolean = false,
-        val forceVP9: Boolean = false
+        val forceVP9: Boolean = false,
+        var serverInfo: ServerInfo?  = null
     )
 
+    @Parcelize
     data class NotificationConfig(
         val title: String? = "Call in progress",
         val content: String? = null,
         val iconResId: Int = R.drawable.buddy,
         val clickIntent: PendingIntent? = null
-    )
+    ): Parcelable
 
     inner class CallServiceBinder : Binder() {
         fun getService(): CallServiceImpl = this@CallServiceImpl
@@ -340,5 +349,9 @@ class CallServiceImpl : LifecycleService(), CallService {
 
     override fun endCall() {
         roomClient?.close()
+    }
+
+    override fun getInvitationLink(): String? {
+        return roomClient?.getInvitationLink()
     }
 }
