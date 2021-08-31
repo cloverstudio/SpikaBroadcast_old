@@ -8,6 +8,9 @@ $light_gray: #c4c4c4;
 $white: #ffffff;
 $blue: #4696f0;
 $yellow: #f3b74c;
+$video_bg: #12121222;
+$video_bg1: #12121222;
+$video_border: #12121255;
 
 a {
   &:hover {
@@ -16,9 +19,11 @@ a {
 }
 
 body {
+  background-color: $gray;
   margin: 0;
   font-family: "Poppins", sans-serif;
   font-family: "Quicksand", sans-serif;
+  overflow: hidden;
 }
 
 main {
@@ -353,39 +358,43 @@ main#full_streaming {
 }
 
 main.conference-main {
+  background-color: $gray;
   width: 100vw;
   height: 100vh;
   background-color: $dark_gray;
   padding: 0 0;
   display: grid;
-  grid-template-columns: 1fr 500px;
-  grid-template-rows: 1fr 80px;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
   grid-template-areas:
-    "main log"
-    "buttons buttons";
+    "main"
+    "buttons";
   color: #fff;
 
   @media (max-width: 768px) {
+    width: 100vw;
     height: auto;
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 80px 80px;
-    grid-template-areas:
-      "main"
-      "log"
-      "buttons";
+    grid-template-rows: 1fr;
+    grid-template-areas: "main";
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    height: auto;
+    grid-template-rows: 1fr;
   }
 
   div.log {
+    display: none;
     grid-area: log;
     font-size: 14px;
     color: #fff;
-    padding: 10px;
     overflow-y: auto;
     overflow-x: hidden;
     height: 85vh;
 
     @media (max-width: 768px) {
-      height: 100px;
+      display: none;
     }
 
     div {
@@ -415,83 +424,179 @@ main.conference-main {
   div.peers {
     grid-area: main;
     background-color: $gray;
-    display: grid;
-    overflow: hidden;
     padding: 0px;
     margin: 0px;
-    grid-template-columns: repeat(5, 20vw);
-    grid-auto-rows: 15vw;
+    height: calc(100vh - 75px);
+    width: 100vw;
+    overflow-x: hidden;
+    overflow-y: auto;
 
-    @media only screen and (min-width: 768px) and (max-width: 1280px) {
-      grid-template-columns: repeat(3, 33vw);
-      grid-auto-rows: 24.75vw;
+    @media (max-width: 768px) {
+      height: calc(100vh - 135px);
     }
 
-    @media only screen and (max-width: 767px) and (min-width: 360px) {
-      grid-template-columns: repeat(1, 100vw);
-      grid-auto-rows: 75vw;
-    }
-
-    @media only screen and (max-width: 359px) {
-      grid-template-columns: repeat(1, 100vw);
-      grid-auto-rows: 75vw;
+    @supports (-webkit-touch-callout: none) {
+      height: calc(100vh - 205px);
     }
 
     div {
-      background: #222;
-      margin: 20px;
-      padding: 5px;
-
-      @media only screen and (min-width: 768px) and (max-width: 1280px) {
-        margin: 10px;
+      align-items: center;
+      justify-content: center;
+      display: flex;
+      /*
+      position: relative;
+      .consumer-info {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        font-size: 10px;
+        height: 100%;
+        overflow: hidden;
       }
-
-      @media only screen and (max-width: 767px) and (min-width: 360px) {
-        margin: 5px;
+      ul {
+        margin: 0px;
+        padding: 10px;
+        li {
+          list-style: none;
+        }
       }
-
-      @media only screen and (max-width: 359px) {
-        margin: 20px;
-      }
+      */
     }
 
-    div.my-video {
-      video {
-        width: 100%;
-        height: 100%;
-      }
+    audio {
+      display: none;
     }
 
-    div.participant-video {
-      background: #222;
-      video {
-        width: 100%;
-        height: 100%;
-      }
+    &.type1 {
       position: relative;
 
-      .consumer-info {
-        &:hover {
-          background-color: #000c;
+      div.me {
+        position: absolute;
+        top: auto;
+        bottom: 10px;
+        left: 10px;
+        z-index: 20;
+        background-color: $video_bg;
+        width: auto;
+        height: auto;
+
+        video {
+          width: 100%;
+          max-width: 30vw;
+          height: auto;
+          padding: 5px;
         }
 
+        @media (max-width: 768px) {
+          padding: 5px;
+          left: 5px;
+        }
+      }
+
+      div.participant {
         position: absolute;
         top: 0px;
         left: 0px;
         height: 100%;
         width: 100%;
-        margin: 0px;
-        padding: 3px;
-        background-color: transparent;
-        font-size: 10px;
-        overflow: auto;
+        z-index: 10;
 
-        ul {
-          padding: 0;
-          margin: 0;
+        video {
+          width: calc(100% - 10px);
+          height: calc(100% - 10px);
         }
-        li {
-          list-style: none;
+      }
+    }
+
+    &.type2 {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
+
+      div.me {
+        grid-row: 2;
+        grid-column: 1;
+      }
+
+      div {
+        align-items: center;
+        justify-content: center;
+        display: flex;
+
+        video {
+          width: calc(100vw / 2 - 12px);
+          height: calc(
+            (100vh - 80px) / 2 - 12px
+          ); // height . controll buttons . margin + border
+          margin: 5px;
+          background-color: $video_bg;
+          border: 1px solid $video_border;
+
+          @media (max-width: 768px) {
+            width: calc(100vw / 2 - 12px);
+            height: calc(
+              (100vh - 80px) / 2 - 12px
+            ); // height . address bar . controll buttons . margin + border
+          }
+
+          @supports (-webkit-touch-callout: none) {
+            width: calc(100vw / 2 - 12px);
+            height: calc(
+              (100vh - 110px - 80px) / 2 - 12px
+            ); // height . ios safari buttons . controll buttons . margin + border
+          }
+        }
+      }
+    }
+
+    &.type3 {
+      display: grid;
+      grid-template-rows: repeat(auto-fill, 1fr 1fr);
+      grid-template-columns: 1fr 1fr 1fr;
+
+      @media (max-width: 768px) {
+        grid-template-rows: repeat(auto-fill, 1fr);
+        grid-template-columns: 1fr 1fr;
+      }
+
+      div.me {
+        grid-row: 2;
+        grid-column: 1;
+
+        @media (max-width: 768px) {
+          grid-row: 3;
+          grid-column: 1;
+        }
+      }
+
+      div {
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        background-color: $video_bg;
+        padding: 0px;
+
+        video {
+          width: calc(100vw / 3 - 12px);
+          height: calc(
+            (100vh - 80px) / 2 - 12px
+          ); // height . controll buttons . margin + border
+          margin: 5px;
+          background-color: $video_bg;
+          border: 1px solid $video_border;
+
+          @media (max-width: 768px) {
+            width: 50vw;
+            height: calc(
+              (100vh - 80px) / 3
+            ); // height . controll buttons . margin + border
+          }
+          @supports (-webkit-touch-callout: none) {
+            width: calc(100vw / 2 - 12px);
+            height: calc(
+              (100vh - 110px - 80px) / 3 - 12px
+            ); // height . ios safari buttons . controll buttons . margin + border
+          }
         }
       }
     }

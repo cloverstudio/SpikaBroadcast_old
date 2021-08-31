@@ -157,7 +157,7 @@ export default ({
         controls={false}
         muted={muteAudio}
       />
-      {!isMe ? (
+      {!isMe && false ? (
         <div className="consumer-info">
           <ul>
             <li>AudioConsumerId: {audioConsumerId}</li>

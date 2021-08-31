@@ -37,6 +37,7 @@ function Conference() {
   const [microphoneProducer, setMicrophoneProducer] =
     useState<mediasoupClient.types.Producer>(null);
   const [log, setLog] = useState<Array<any>>([]);
+  const [peerContainerClass, setPeerContainerClass] = useState<string>("type1");
 
   let { roomId }: { roomId?: string } = useParams();
 
@@ -46,7 +47,7 @@ function Conference() {
   if (!localStorage.getItem("peerId")) localStorage.setItem("peerId", peerId);
 
   useEffect(() => {
-    const spikaBroadcastClient = new SpikaBroadcastClient({
+    const spikaBroadcastClientLocal = new SpikaBroadcastClient({
       debug: true,
       host: "mediasouptest.clover.studio",
       port: 4443,
@@ -76,24 +77,30 @@ function Conference() {
         onUpdateMicrophoneDevice: () => {},
         onUpdateSpeakerDevice: () => {},
         onLogging: (type, message) => {
+          if (typeof message !== "string")
+            message = `<span class="small">${Utils.printObj(message)}</span>`;
           log.push({ time: dayjs().format("HH:mm"), type, message });
         },
       },
     });
 
-    setSpikabroadcastClient(spikaBroadcastClient);
+    spikaBroadcastClientLocal.connect();
+    setSpikabroadcastClient(spikaBroadcastClientLocal);
   }, []);
 
   useEffect(() => {
-    if (spikabroadcastClient) spikabroadcastClient.connect();
-  }, [spikabroadcastClient]);
+    if (!participants) return;
+
+    const participantCount = participants.length;
+    if (participantCount <= 1) setPeerContainerClass("type1");
+    else if (participantCount <= 3) setPeerContainerClass("type2");
+    else setPeerContainerClass("type3");
+  }, [participants]);
 
   const consumerVideoElmInit = (elm: HTMLVideoElement, i: number) => {
     if (!participants || !participants[i] || !elm) return;
 
     const participant: Participant = participants[i];
-
-    console.log("consumers", participant.consumers);
 
     const consumers = participant.consumers;
     if (!consumers) return;
@@ -114,8 +121,8 @@ function Conference() {
     <div>
       <header></header>
       <main className="conference-main">
-        <div className="peers">
-          <div className="my-video">
+        <div className={`peers ${peerContainerClass}`}>
+          <div className="me">
             <Me
               videoProducer={webcamProcuder}
               audioProducer={microphoneProducer}
@@ -125,7 +132,7 @@ function Conference() {
             {participants
               ? participants.map((participant, i) => {
                   return (
-                    <div className="participant-video">
+                    <div className="participant">
                       <Peer participant={participant} key={participant.id} />
                     </div>
                   );
@@ -133,6 +140,7 @@ function Conference() {
               : null}
           </>
         </div>
+
         <div className="log">
           {log.map(({ time, type, message }) => {
             return (

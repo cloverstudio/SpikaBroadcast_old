@@ -8,6 +8,7 @@ import Initial from "./Initial";
 import Join from "./Join";
 import Create from "./Create";
 import Conference from "./Conference";
+import Test from "./test";
 import GlobalContext, {
   defauiltValue,
   GlobalContextValuesInterface,
@@ -29,6 +30,9 @@ function App() {
           </Route>
           <Route path="/create">
             <Create />
+          </Route>
+          <Route path="/test">
+            <Test />
           </Route>
           <Route path="/conference/:roomId">
             <Conference />

@@ -94,7 +94,7 @@ export default class SpikaBroadcastClient {
     device: null,
     resolution: "hd",
   };
-  forceH264: boolean = true;
+  forceH264: boolean = false;
   forceVP9: boolean = false;
   externalVideo: any;
   externalVideoStream: MediaStream;
@@ -147,6 +147,17 @@ export default class SpikaBroadcastClient {
 
     this.protoo.on("disconnected", () => {
       this.logger.debug("Protoo disconnected");
+
+      // Close mediasoup Transports.
+      if (this.sendTransport) {
+        this.sendTransport.close();
+        this.sendTransport = null;
+      }
+
+      if (this.recvTransport) {
+        this.recvTransport.close();
+        this.recvTransport = null;
+      }
     });
 
     this.protoo.on("close", () => {
@@ -182,7 +193,7 @@ export default class SpikaBroadcastClient {
               e2e.setupReceiverTransform(consumer.rtpReceiver);
             }
 
-            this.logger.debug({ msg: "new consumer", consumer });
+            this.logger.debug(`webcamProducer ${consumer.id}`);
 
             // Store in the map.
             this.consumers.set(consumer.id, consumer);
@@ -217,10 +228,7 @@ export default class SpikaBroadcastClient {
             // resume this Consumer (which was paused for now if video).
             accept();
           } catch (error) {
-            this.logger.error({
-              msg: '"newConsumer" request failed:%o',
-              error,
-            });
+            this.logger.error(`newConsumer request failed`);
 
             throw error;
           }
@@ -263,7 +271,7 @@ export default class SpikaBroadcastClient {
           const peerId = notification.data.peerId;
           this.participants.delete(peerId);
 
-          this.logger.debug({ msg: "peer closed", peerId, id: peerId });
+          this.logger.debug(`peer closed ${peerId}`);
 
           if (this.listeners.onParticipantUpdate)
             this.listeners.onParticipantUpdate(this.participants);
@@ -398,7 +406,8 @@ export default class SpikaBroadcastClient {
         if (this.listeners.onMicrophoneStateChanged)
           this.listeners.onMicrophoneStateChanged(this.micEnabled);
       } catch (e) {
-        this.logger.error(e);
+        this.logger.error("toggleMicrophone() failed");
+        this.logger.error(`<span class="small">${Utils.printObj(e)}</span>`);
       }
     } else {
       //unmute
@@ -413,7 +422,8 @@ export default class SpikaBroadcastClient {
         if (this.listeners.onMicrophoneStateChanged)
           this.listeners.onMicrophoneStateChanged(this.micEnabled);
       } catch (e) {
-        this.logger.error(e);
+        this.logger.error("toggleMicrophone() failed");
+        this.logger.error(`<span class="small">${Utils.printObj(e)}</span>`);
       }
     }
   }
@@ -489,30 +499,53 @@ export default class SpikaBroadcastClient {
         callback,
         errback // eslint-disable-line no-shadow
       ) => {
-        this.logger.debug("Transport connected");
+        try {
+          this.logger.debug("Transport connected");
 
-        const params = await this.protoo.request("connectWebRtcTransport", {
-          transportId: this.sendTransport.id,
-          dtlsParameters,
-        });
+          const params = await this.protoo.request("connectWebRtcTransport", {
+            transportId: this.sendTransport.id,
+            dtlsParameters,
+          });
 
-        callback();
+          callback();
+        } catch (error) {
+          errback(error);
+
+          this.logger.debug(`sendTransport error on connect`);
+          this.logger.error(
+            `<span class="small">${Utils.printObj(error)}</span>`
+          );
+        }
       }
     );
 
     this.sendTransport.on(
       "produce",
       async ({ kind, rtpParameters, appData }, callback, errback) => {
-        this.logger.debug("Transport produce");
+        try {
+          this.logger.debug(`Transport produce ${kind}`);
 
-        const { id } = await this.protoo.request("produce", {
-          transportId: this.sendTransport.id,
-          kind,
-          rtpParameters,
-          appData,
-        });
+          const produceResult = await this.protoo.request("produce", {
+            transportId: this.sendTransport.id,
+            kind,
+            rtpParameters,
+            appData,
+          });
 
-        callback({ id });
+          this.logger.debug(`Transport produceResult`);
+          this.logger.error(
+            `<span class="small">${Utils.printObj(produceResult)}</span>`
+          );
+
+          callback({ id: produceResult.id });
+        } catch (error) {
+          errback(error);
+
+          this.logger.debug(`sendTransport error on produce`);
+          this.logger.error(
+            `<span class="small">${Utils.printObj(error)}</span>`
+          );
+        }
       }
     );
 
@@ -536,6 +569,11 @@ export default class SpikaBroadcastClient {
           callback({ id });
         } catch (error) {
           errback(error);
+
+          this.logger.debug(`sendTransport error on producedata`);
+          this.logger.error(
+            `<span class="small">${Utils.printObj(error)}</span>`
+          );
         }
       }
     );
@@ -589,7 +627,7 @@ export default class SpikaBroadcastClient {
       displayName: this.displayName,
       device: this.browser,
       rtpCapabilities: this.mediasoupDevice.rtpCapabilities,
-      sctpCapabilities: undefined,
+      sctpCapabilities: this.mediasoupDevice.sctpCapabilities,
     });
 
     peers.map((peer: any) => {
@@ -603,7 +641,7 @@ export default class SpikaBroadcastClient {
         consumerTemporalCurrentLayers: new Map(),
       });
 
-      this.logger.debug({ msg: "new peer", id: peer.id });
+      this.logger.debug(`new peer ${peer.id}`);
     });
 
     if (this.listeners.onParticipantUpdate)
@@ -662,7 +700,9 @@ export default class SpikaBroadcastClient {
         this._disableMic().catch(() => {});
       });
     } catch (error) {
-      this.logger.error({ msg: "enableMic() | failed:%o", error });
+      this.logger.error("enableMic() failed");
+      this.logger.error(`<span class="small">${Utils.printObj(error)}</span>`);
+
       if (track) track.stop();
     }
   }
@@ -679,7 +719,8 @@ export default class SpikaBroadcastClient {
         producerId: this.micProducer.id,
       });
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error("disable() failed");
+      this.logger.error(`<span class="small">${Utils.printObj(error)}</span>`);
     }
 
     this.micProducer = null;
@@ -736,6 +777,8 @@ export default class SpikaBroadcastClient {
 
         track = stream.getVideoTracks()[0];
       } else {
+        this.logger.debug("enableWebcam() | calling _getExternalVideoStream()");
+
         device = { label: "external video" };
         const stream = await this._getExternalVideoStream();
         track = stream.getVideoTracks()[0].clone();
@@ -785,6 +828,10 @@ export default class SpikaBroadcastClient {
         codecOptions,
         codec,
       });
+      this.logger.debug("webcamProducer");
+      this.logger.debug(
+        `<span class="small">${Utils.printObj(this.webcamProducer)}</span>`
+      );
 
       if (this.listeners.onStartVideo)
         this.listeners.onStartVideo(this.webcamProducer);
@@ -793,19 +840,18 @@ export default class SpikaBroadcastClient {
         e2e.setupSenderTransform(this.webcamProducer.rtpSender);
       }
 
-      this.webcamProducer.on("newtransport", () => {
-        this.logger.debug("new web cam transport");
-      });
-
       this.webcamProducer.on("transportclose", () => {
+        this.logger.debug("webcam transportclose");
         this.webcamProducer = null;
       });
 
       this.webcamProducer.on("trackended", () => {
+        this.logger.debug("webcam trackended");
         this._disableWebcam().catch(() => {});
       });
     } catch (error) {
-      this.logger.error("enableWebcam() | failed");
+      this.logger.error("enableWebcam() failed");
+      this.logger.error(`<span class="small">${Utils.printObj(error)}</span>`);
 
       if (track) track.stop();
     }
