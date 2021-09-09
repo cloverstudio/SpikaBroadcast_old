@@ -40,7 +40,7 @@ enum class ConnectionState {
 internal class RoomClient(
     context: Context,
     roomStore: RoomStore,
-    callConfig: CallServiceImpl.CallConfig,
+    private val callConfig: CallServiceImpl.CallConfig,
     options: RoomOptions?
 ) : RoomMessageHandler(roomStore) {
 
@@ -119,9 +119,9 @@ internal class RoomClient(
         mDisplayName = callConfig.displayName
         avatarUrl = callConfig.avatarUrl
         mClosed = false
-        mProtooUrl = UrlFactory.getProtooUrl(callConfig.roomId, callConfig.peerId, callConfig.forceH264, callConfig.forceVP9)
+        mProtooUrl = UrlFactory.getProtooUrl(callConfig)
         this.mStore.setMe(callConfig.peerId, callConfig.displayName, mOptions.device)
-        this.mStore.setRoomUrl(callConfig.roomId, UrlFactory.getInvitationLink(callConfig.roomId, callConfig.forceH264, callConfig.forceVP9))
+        this.mStore.setRoomUrl(callConfig.roomId, UrlFactory.getInvitationLink(callConfig))
         mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext)
 
         // init worker handler.
@@ -1099,5 +1099,9 @@ internal class RoomClient(
             logError("resumeConsumer() | failed:", e)
             mStore.addNotify("error", "Error resuming Consumer: " + e.message)
         }
+    }
+
+    fun getInvitationLink(): String{
+        return UrlFactory.getInvitationLink(callConfig)
     }
 }

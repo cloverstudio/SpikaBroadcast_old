@@ -1,54 +1,48 @@
 package clover.studio.sdk.utils
 
+import clover.studio.sdk.service.CallServiceImpl
 import java.lang.Exception
 import java.util.*
 
 object UrlFactory {
-    //  private static final String HOSTNAME = "v3demo.mediasoup.org";
-//    private const val HOSTNAME = "192.168.1.119"
     private const val HOSTNAME = "mediasouptest.clover.studio"
     private const val PORT = 4443
 
-    private var hostname: String? = null
-    private var port: String? = null
+    fun getInvitationLink(callConfig: CallServiceImpl.CallConfig): String {
 
-    fun getInvitationLink(roomId: String?, forceH264: Boolean, forceVP9: Boolean): String {
-
-        if (hostname.isNullOrBlank()){
+        if (callConfig.serverInfo?.hostName.isNullOrBlank()){
             throw ServerDataNotSetException()
         }
 
-        var url = String.format(Locale.US, "https://%s/?roomId=%s", hostname, roomId)
-        if (forceH264) {
+        var url = String.format(Locale.US, "https://%s/?roomId=%s", callConfig.serverInfo?.hostName, callConfig.roomId)
+        if (callConfig.forceH264) {
             url += "&forceH264=true"
-        } else if (forceVP9) {
+        } else if (callConfig.forceVP9) {
             url += "&forceVP9=true"
         }
         return url
     }
 
-    fun getProtooUrl(
-        roomId: String?, peerId: String?, forceH264: Boolean, forceVP9: Boolean
-    ): String {
-
-        if (hostname.isNullOrBlank() || port.isNullOrBlank()){
+    fun getProtooUrl(callConfig: CallServiceImpl.CallConfig): String {
+        if (callConfig.serverInfo?.hostName.isNullOrBlank() ||
+            callConfig.serverInfo?.port.isNullOrBlank()){
             throw ServerDataNotSetException()
         }
 
         var url = String.format(
-            Locale.US, "wss://%s:%d/?roomId=%s&peerId=%s", HOSTNAME, PORT, roomId, peerId
+            Locale.US,
+            "wss://%s:%s/?roomId=%s&peerId=%s",
+            callConfig.serverInfo?.hostName,
+            callConfig.serverInfo?.port,
+            callConfig.roomId,
+            callConfig.peerId
         )
-        if (forceH264) {
+        if (callConfig.forceH264) {
             url += "&forceH264=true"
-        } else if (forceVP9) {
+        } else if (callConfig.forceVP9) {
             url += "&forceVP9=true"
         }
         return url
-    }
-
-    fun setServerData(hostname: String, port: String) {
-        this.hostname = hostname
-        this.port = port
     }
 }
 
