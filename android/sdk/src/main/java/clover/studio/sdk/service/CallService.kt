@@ -67,12 +67,12 @@ interface CallService {
     /**
      * Toggles the camera state between enabled and disabled.
      */
-    fun toggleCameraState()
+    fun toggleCameraState(): Boolean
 
     /**
      * Toggles the microphone state between enabled and disabled.
      */
-    fun toggleMicrophoneState()
+    fun toggleMicrophoneState(): Boolean
 
     /**
      * Toggles the speaker state between enabled and disabled.
@@ -317,26 +317,29 @@ class CallServiceImpl : LifecycleService(), CallService {
             }
             return@CombinedLiveData peerList
         }
-
     }
 
     override fun switchCamera() {
         roomClient?.changeCam()
     }
 
-    override fun toggleCameraState() {
-        if (me.cameraState == DeviceState.ON) {
+    override fun toggleCameraState(): Boolean {
+        return if (me.cameraState == DeviceState.ON) {
             roomClient?.disableCam()
+            false
         } else {
             roomClient?.enableCam()
+            true
         }
     }
 
-    override fun toggleMicrophoneState() {
-        if (me.microphoneState == DeviceState.ON) {
+    override fun toggleMicrophoneState(): Boolean {
+        return if (me.microphoneState == DeviceState.ON) {
             roomClient?.muteMic()
+            false
         } else {
             roomClient?.unmuteMic()
+            true
         }
     }
 

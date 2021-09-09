@@ -9,10 +9,7 @@ import android.os.IBinder
 import androidx.core.os.bundleOf
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
-import clover.studio.sdk.model.LocalStream
-import clover.studio.sdk.model.Participant
-import clover.studio.sdk.model.ServerInfo
-import clover.studio.sdk.model.UserInformation
+import clover.studio.sdk.model.*
 import clover.studio.sdk.service.CallServiceImpl
 import clover.studio.sdk.service.NOTIFICATION_CONFIG
 import clover.studio.sdk.service.SERVER_INFO
@@ -28,7 +25,7 @@ import org.mediasoup.droid.MediasoupClient
 
 interface SpikaBroadcastListener {
     fun onLocalStreamChanged(localStream: LocalStream)
-    fun onRemoteStreamsChanged(consumers: List<PeerProps>)
+    fun onRemoteStreamsChanged(consumers: List<RemotePeer>)
     fun microphoneStateChanged(enabled: Boolean)
     fun cameraStateChanged(enabled: Boolean)
     fun speakerStateChanged(enabled: Boolean)
@@ -39,8 +36,8 @@ interface SpikaBroadcastListener {
 open class SpikaBroadcast(
     private val applicationContext: Context,
     private val lifecycleOwner: LifecycleOwner,
-    private val userInformation: UserInformation,
     private val spikaBroadcastListener: SpikaBroadcastListener?,
+    private val userInformation: UserInformation,
     private val serverInfo: ServerInfo,
     private val notificationConfig: CallServiceImpl.NotificationConfig
 ) {
@@ -139,6 +136,7 @@ open class SpikaBroadcast(
             callService = binder.getService()
             callServiceBound = true
             observeMe()
+            observePeers()
             onServiceConnectionUpdate(callServiceBound)
         }
     }
@@ -148,6 +146,35 @@ open class SpikaBroadcast(
             it.getMe().observe(
                 lifecycleOwner,
                 { me -> onMeUpdate(me) }
+            )
+        }
+    }
+
+    private fun observePeers(){
+        callService?.let {
+            callService?.getCallPeers()?.observe(
+                lifecycleOwner,
+                { peers ->
+                    val remotePeerList = mutableListOf<RemotePeer>()
+                    for (peer in peers){
+                        remotePeerList.add(
+                            RemotePeer(
+                                peer.isMe,
+                                peer.peer,
+                                peer.audioProducerId,
+                                peer.videoProducerId,
+                                peer.audioTrack,
+                                peer.videoTrack,
+                                peer.audioEnabled,
+                                peer.videoVisible,
+                                peer.audioCodec,
+                                peer.videoCodec,
+                                peer.audioScore,
+                                peer.videoScore
+                            )
+                        )
+                    }
+                    spikaBroadcastListener?.onRemoteStreamsChanged(remotePeerList) }
             )
         }
     }
@@ -162,16 +189,18 @@ open class SpikaBroadcast(
         )
     }
 
-    internal fun switchCamera() {
+    fun switchCamera() {
         callService?.switchCamera()
     }
 
     fun toggleMicrophoneState() {
-        callService?.toggleMicrophoneState()
+        val newMicrophoneState = callService?.toggleMicrophoneState()
+        spikaBroadcastListener?.microphoneStateChanged(newMicrophoneState ?: true)
     }
 
     fun toggleCameraState() {
-        callService?.toggleCameraState()
+        val newCameraState =  callService?.toggleCameraState()
+        spikaBroadcastListener?.cameraStateChanged(newCameraState ?: true)
     }
 
     fun toggleSpeakerState(): Boolean {
@@ -184,8 +213,13 @@ open class SpikaBroadcast(
         return callService?.getCallParticipants()
     }
 
+    fun getInvitationLink(): String? {
+        return callService?.getInvitationLink()
+    }
+
     fun endCall() {
         callService?.endCall()
+        spikaBroadcastListener?.callClosed()
     }
 
     companion object {

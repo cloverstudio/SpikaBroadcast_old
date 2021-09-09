@@ -29,8 +29,8 @@ class SpikaBroadcastUi(
 ) : SpikaBroadcast(
     activity.applicationContext,
     lifecycleOwner,
-    userInformation,
     spikaBroadcastListener,
+    userInformation,
     serverInfo,
     notificationConfig
 ) {
